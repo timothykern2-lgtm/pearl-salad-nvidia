@@ -1,5 +1,11 @@
 # Pearl (PRL) GPU miner container for SaladCloud — NVIDIA GPUs
 
+**Pearl Miner V2:** SRBMiner 3.8.0, BzMiner 100.50, KRig 1.5.12,
+Kryptex BTC account payouts, profitability estimates and opt-in bounded
+reallocation. Read [V2 configuration and deployment review](PEARL-MINER-V2.md).
+V2 defaults to `REALLOCATE_MODE=preview`, overriding the legacy reallocation
+defaults described below. Deployment requires approval.
+
 Container image for SaladCloud **NVIDIA** GPU classes (RTX 3060 through
 RTX 5090) that mines [Pearl](https://pearlchain.live/) (PRL) on the
 **pearlhash** proof-of-useful-work algorithm. Sibling of

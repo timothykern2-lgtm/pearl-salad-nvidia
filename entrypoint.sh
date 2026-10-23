@@ -14,6 +14,7 @@
 
 set -u
 . "$(dirname "$0")/common.sh"
+. "$(dirname "$0")/v2.sh"
 
 trap cleanup TERM INT
 ship_start
@@ -41,6 +42,7 @@ run_miner() {
   fi
   RAN_ANY=1
   : > "$LOG"
+  profit_reset
   echo "=== [$name] starting: $(miner_cmd "$name") ==="
   cd "$MINER_ROOT/$name"
   # tee -a so the periodic truncation below actually frees space (with plain
@@ -73,6 +75,7 @@ run_miner() {
     if [ "$confirmed" -eq 1 ]; then
       # Hashrate floor (common.sh) reads this pass's miner lines first.
       hashrate_floor_tick "$name" "$pipeline_pid" "$LOG"
+      profit_tick "$name" "$pipeline_pid" "$LOG"
       # Miner output keeps flowing to Salad's log via tee's stdout; the file
       # copy is only needed for the share check, so keep it from growing
       # (a few MB/day otherwise, for nothing).

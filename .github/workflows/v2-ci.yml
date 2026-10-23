@@ -1,0 +1,50 @@
+name: Pearl Miner V2 validation
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [pearl-miner-v2]
+permissions:
+  contents: read
+concurrency:
+  group: v2-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Shell syntax and behavior (no mining or cloud access)
+        run: |
+          for script in common.sh entrypoint.sh bench.sh v2.sh tests/*.sh; do dash -n "$script"; done
+          dash tests/gpu-class-check.sh
+          dash tests/v2.sh
+  build:
+    needs: test
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    strategy:
+      matrix:
+        target: [miner, bench]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/build-push-action@v6
+        with:
+          context: .
+          target: ${{ matrix.target }}
+          push: false
+          load: true
+          tags: pearl-v2:${{ matrix.target }}
+          build-args: IMAGE_VERSION=v2-review-${{ github.sha }}
+          cache-from: type=gha,scope=v2-${{ matrix.target }}
+          cache-to: type=gha,mode=max,scope=v2-${{ matrix.target }}
+      - name: Image smoke test (entrypoint overridden; no mining)
+        run: |
+          docker run --rm --entrypoint /bin/sh pearl-v2:${{ matrix.target }} -ec '
+            test -x /opt/srb/SRBMiner-MULTI
+            test -x /opt/bz/bzminer
+            test -x /opt/krig/krig-miner
+            sh -n /common.sh && sh -n /v2.sh && sh -n /entrypoint.sh && sh -n /bench.sh
+          '
