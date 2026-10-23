@@ -48,3 +48,32 @@ jobs:
             test -x /opt/krig/krig-miner
             sh -n /common.sh && sh -n /v2.sh && sh -n /entrypoint.sh && sh -n /bench.sh
           '
+
+  publish-canary:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/pearl-miner-v2'
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Publish approved single-instance canary
+        id: publish
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          target: miner
+          push: true
+          tags: ghcr.io/timothykern2-lgtm/pearl-salad-nvidia:v2-canary-${{ github.sha }}
+          build-args: IMAGE_VERSION=v2-review-${{ github.sha }}
+          cache-from: type=gha,scope=v2-miner
+      - name: Record immutable canary reference
+        run: echo 'ghcr.io/timothykern2-lgtm/pearl-salad-nvidia@${{ steps.publish.outputs.digest }}' >> "$GITHUB_STEP_SUMMARY"
