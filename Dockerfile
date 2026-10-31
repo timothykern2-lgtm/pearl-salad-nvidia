@@ -148,8 +148,8 @@ RUN wget -qO /tmp/krig.tgz \
 # 5000 series"; 3.7.6 (14 Oct) 3000/4000; 3.7.5 (10 Oct) minor 5000; 3.7.4 (9 Oct)
 # 2000/5000; 3.7.3 (7 Oct) new kernels default on Ampere/Ada/Blackwell; 3.7.2
 # experimental. 3.7.1 (29 Sep) did 309-317 TH/s on an RTX 4090 on Runpod 18 Oct.
-ARG SRB_VERSION=3.8.1
-ARG SRB_SHA256=2f65b3b7f7781def46610c43b8a10a3d38033f6cf4ef6cc968b405ca9b0ce807
+ARG SRB_VERSION=3.8.3
+ARG SRB_SHA256=c9e10baae24d1811c04d30a416e237774e9e16110276c864a4221395f9f55e8b
 RUN wget -qO /tmp/srb.tgz \
       https://github.com/doktor83/SRBMiner-Multi/releases/download/${SRB_VERSION}/SRBMiner-Multi-$(echo ${SRB_VERSION} | tr . -)-Linux.tar.gz \
  && echo "${SRB_SHA256}  /tmp/srb.tgz" | sha256sum -c - \
@@ -163,8 +163,8 @@ RUN wget -qO /tmp/srb.tgz \
 # 100.45 (2 Oct): "improvements (~2%) on pearl for nvidia" and "fixed an issue with
 # pools being unable to reconnect"; does not hash on Ada (sm_89) - keep bz out of
 # 4090/4080/4070 groups. 100.40 (26 Sep): "Big Nvidia & AMD pearl optimizations".
-ARG BZ_VERSION=100.52
-ARG BZ_SHA256=0c605f37bf50ce0ff24b0719fc816a318f9906b0c86af21d8844e18fec68aa3b
+ARG BZ_VERSION=100.60
+ARG BZ_SHA256=1d736e08189a8bb0a5ebe1b1e1b51509b86af4aeea21337b8f799924d46533c5
 RUN wget -qO /tmp/bz.tgz \
       https://github.com/bzminer/bzminer/releases/download/v${BZ_VERSION}/bzminer_v${BZ_VERSION}_linux.tar.gz \
  && echo "${BZ_SHA256}  /tmp/bz.tgz" | sha256sum -c - \
