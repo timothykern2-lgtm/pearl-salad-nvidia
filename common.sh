@@ -202,12 +202,28 @@ ship_json() {
 # Wallet / worker
 # ---------------------------------------------------------------------------
 check_wallet() {
+  v2_config
+  case "${PAYOUT_MODE:-prl}" in
+    btc)
+      WALLET="${KRYPTEX_USERNAME:-}"
+      if ! printf '%s\n' "$WALLET" | grep -Eq '^[kK][rR][xX][A-Za-z0-9]+$'; then
+        echo 'ERROR: BTC mode requires KRYPTEX_USERNAME from your Kryptex profile.' >&2; exit 1
+      fi
+      case "${POOL:-}" in
+        stratum+ssl://prl.kryptex.network:8048|stratum+ssl://prl-us.kryptex.network:8048|stratum+ssl://prl-eu.kryptex.network:8048|stratum+ssl://prl-br.kryptex.network:8048|stratum+ssl://prl-sg.kryptex.network:8048|stratum+ssl://prl-hk.kryptex.network:8048|stratum+ssl://prl-ru.kryptex.network:8048|stratum+ssl://prl-ae.kryptex.network:8048) ;;
+        *) echo 'ERROR: BTC mode requires a Kryptex Pearl TLS pool on port 8048.' >&2; exit 1 ;;
+      esac
+      case "${KRIG_COIN:-pearl}" in pearl|prl|pearlhash) ;; *) echo 'ERROR: BTC mode is configured for Pearl.' >&2; exit 1 ;; esac
+      ;;
+    prl) ;;
+    *) echo 'ERROR: PAYOUT_MODE must be prl or btc.' >&2; exit 1 ;;
+  esac
   if [ "${WALLET:-REPLACE_WITH_YOUR_WALLET}" = "REPLACE_WITH_YOUR_WALLET" ]; then
     echo "ERROR: set the WALLET environment variable in your SaladCloud container group." >&2
     exit 1
   fi
-  case "${KRIG_COIN:-pearl}:$WALLET" in
-    pearl:prl1*|prl:prl1*|pearlhash:prl1*|quantus:*|qtc:*) ;;
+  case "${PAYOUT_MODE:-prl}:${KRIG_COIN:-pearl}:$WALLET" in
+    btc:*|prl:pearl:prl1*|prl:prl:prl1*|prl:pearlhash:prl1*|prl:quantus:*|prl:qtc:*) ;;
     *) echo "WARNING: Pearl mainnet addresses start with 'prl1p'. WALLET='$WALLET' looks wrong - pools will reject it." >&2 ;;
   esac
   WORKER_NAME="${SALAD_MACHINE_ID:-${WORKER:-salad01}}"
@@ -223,6 +239,7 @@ check_wallet() {
 # run, or not on Salad) so callers can fall back to just warning.
 # ---------------------------------------------------------------------------
 salad_reallocate() {
+  reallocation_allowed || return 1
   reason="$1"
   echo "=== asking Salad to reallocate this replica: $reason ==="
   # Salad stops the container within seconds of a 2xx; get the reason (and
@@ -233,7 +250,7 @@ salad_reallocate() {
     -H 'Content-Type: application/json' -H 'Metadata: true' \
     --data "{\"reason\":\"$reason\"}" 2>/dev/null)"
   case "$code" in
-    2*) echo "=== reallocation accepted (HTTP $code) - Salad will stop this container ==="; ship_flush; return 0 ;;
+    2*) REALLOC_ACCEPTED=1; echo "=== reallocation accepted (HTTP $code) - Salad will stop this container ==="; ship_flush; return 0 ;;
   esac
   echo "=== Salad IMDS not reachable (HTTP ${code:-none}) - not on Salad? carrying on ==="
   return 1

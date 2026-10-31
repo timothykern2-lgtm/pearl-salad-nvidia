@@ -21,6 +21,7 @@
 
 set -u
 . "$(dirname "$0")/common.sh"
+. "$(dirname "$0")/v2.sh"
 
 trap cleanup TERM INT
 ship_start

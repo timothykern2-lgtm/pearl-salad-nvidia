@@ -128,8 +128,8 @@ RUN sed -i 's|http://|https://|g' /etc/apt/sources.list.d/*.sources /etc/apt/sou
 # 1.5.3 (30 Sep): 0 % devfee on Kryptex, 3 % on other pools; no Pearl speed
 # change. Same linux-x64 archive as the AMD image. SHA-256s in this file are the
 # GitHub release asset digests.
-ARG KRIG_VERSION=1.5.3
-ARG KRIG_SHA256=438752a8c9878d37340fcc2e77c540c83b49130d6ce3802bf02b7e4a107698f2
+ARG KRIG_VERSION=1.5.12
+ARG KRIG_SHA256=6c456f6540a26ab2dd5fa02434d5827f09d19e06001ef0e6eef5ac1f80b17cea
 RUN wget -qO /tmp/krig.tgz \
       https://github.com/kryptex/krig-miner/releases/download/v${KRIG_VERSION}/krig-miner-${KRIG_VERSION}-linux-x64.tar.gz \
  && echo "${KRIG_SHA256}  /tmp/krig.tgz" | sha256sum -c - \
@@ -148,8 +148,8 @@ RUN wget -qO /tmp/krig.tgz \
 # 5000 series"; 3.7.6 (14 Oct) 3000/4000; 3.7.5 (10 Oct) minor 5000; 3.7.4 (9 Oct)
 # 2000/5000; 3.7.3 (7 Oct) new kernels default on Ampere/Ada/Blackwell; 3.7.2
 # experimental. 3.7.1 (29 Sep) did 309-317 TH/s on an RTX 4090 on Runpod 18 Oct.
-ARG SRB_VERSION=3.7.9
-ARG SRB_SHA256=f0cfca82411fdf2245422db1d5989ce3f5e5b746ec776581853af5705f2b9a7f
+ARG SRB_VERSION=3.8.3
+ARG SRB_SHA256=c9e10baae24d1811c04d30a416e237774e9e16110276c864a4221395f9f55e8b
 RUN wget -qO /tmp/srb.tgz \
       https://github.com/doktor83/SRBMiner-Multi/releases/download/${SRB_VERSION}/SRBMiner-Multi-$(echo ${SRB_VERSION} | tr . -)-Linux.tar.gz \
  && echo "${SRB_SHA256}  /tmp/srb.tgz" | sha256sum -c - \
@@ -163,8 +163,8 @@ RUN wget -qO /tmp/srb.tgz \
 # 100.45 (2 Oct): "improvements (~2%) on pearl for nvidia" and "fixed an issue with
 # pools being unable to reconnect"; does not hash on Ada (sm_89) - keep bz out of
 # 4090/4080/4070 groups. 100.40 (26 Sep): "Big Nvidia & AMD pearl optimizations".
-ARG BZ_VERSION=100.45
-ARG BZ_SHA256=e52cceefb78b88dd57197dd833c17424fa40644b7d49b4c194f74efeb3d5054c
+ARG BZ_VERSION=100.60
+ARG BZ_SHA256=1d736e08189a8bb0a5ebe1b1e1b51509b86af4aeea21337b8f799924d46533c5
 RUN wget -qO /tmp/bz.tgz \
       https://github.com/bzminer/bzminer/releases/download/v${BZ_VERSION}/bzminer_v${BZ_VERSION}_linux.tar.gz \
  && echo "${BZ_SHA256}  /tmp/bz.tgz" | sha256sum -c - \
@@ -189,7 +189,7 @@ ENV POOL=stratum+ssl://prl.kryptex.network:8048 \
 # Tells common.sh which GPU readiness check and miner flags to use.
 ENV MINER_VENDOR=nvidia
 
-COPY common.sh entrypoint.sh bench.sh /
+COPY common.sh entrypoint.sh bench.sh v2.sh /
 RUN chmod +x /entrypoint.sh /bench.sh
 
 # --- bench image: same miners, different entrypoint ---------------------------
